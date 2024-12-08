@@ -1,6 +1,6 @@
 use anyhow::Result;
 
-use house_price_predictor::{download_dataset, load_csv_file};
+use house_price_predictor::*;
 
 const DATASET_URL: &str =
     "https://raw.githubusercontent.com/selva86/datasets/master/BostonHousing.csv";
@@ -11,13 +11,10 @@ fn main() -> Result<()> {
     download_dataset(DATASET_URL, OUTPUT_FILE)?;
 
     // Load file into memory
-    let _df = load_csv_file(OUTPUT_FILE)?;
+    let df = load_csv_file(OUTPUT_FILE)?;
 
     // Prepare the data by random splitting inro train and test sets
-    fn split_train_test(df: &DataFrame, test_size: f64) -> (DataFrame, DataFrame) {
-        let (train_df, test_df) = df.random_split(test_size);
-        (train_df, test_df)
-    }
+    let (train_df, test_df) = split_train_test(&df, 0.2)?;
 
     // Train an XGBoost model
     // Push to S3 bucket
