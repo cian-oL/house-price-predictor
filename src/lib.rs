@@ -58,3 +58,15 @@ pub fn split_train_test(df: &DataFrame, test_size_percent: f64) -> Result<(DataF
 
     Ok((train_df, test_df))
 }
+
+// Split into features and target
+pub fn split_features_target(df: &DataFrame) -> Result<(DataFrame, DataFrame)> {
+    let features = df.select([
+        "crim", "zn", "indus", "chas", "nox", "rm", "age", "dis", "rad", "tax", "ptratio", "black",
+        "lstat",
+    ])?;
+
+    let target = df.select(["medv"])?;
+
+    Ok((features, target))
+}

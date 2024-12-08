@@ -16,7 +16,10 @@ fn main() -> Result<()> {
     // Prepare the data by random splitting inro train and test sets
     let (train_df, test_df) = split_train_test(&df, 0.2)?;
 
-    // Train an XGBoost model
+    // Split into features and target
+    let (x_train_df, y_train_df) = split_features_target(&train_df)?;
+    let (x_test_df, y_test_df) = split_features_target(&test_df)?;
+
     // Push to S3 bucket
 
     Ok(())
