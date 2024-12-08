@@ -3,6 +3,7 @@ use polars::prelude::*;
 use rand::prelude::*;
 use std::fs::File;
 use std::io::Write;
+use xgboost::{parameters, Booster, DMatrix};
 
 pub fn download_dataset(dataset_url: &str, output_file: &str) -> Result<()> {
     println!("Downloading Boston Housing dataset...");
@@ -69,4 +70,35 @@ pub fn split_features_target(df: &DataFrame) -> Result<(DataFrame, DataFrame)> {
     let target = df.select(["medv"])?;
 
     Ok((features, target))
+}
+
+// trains the model with xgboost, evaluates on test set, saves model locally in a models directory and returns the path to the model
+pub fn train_model(
+    x_train_df: &DataFrame,
+    y_train_df: &DataFrame,
+    x_test_df: &DataFrame,
+    y_test_df: &DataFrame,
+) -> Result<String> {
+    // Transform Polars DataFrames into 2D arrays in row-major order
+    let x_train = x_train_df.to_ndarray::<Float32Type>(IndexOrder::C)?;
+    let y_train = y_train_df.to_ndarray::<Float32Type>(IndexOrder::C)?;
+    let x_test = x_test_df.to_ndarray::<Float32Type>(IndexOrder::C)?;
+    let y_test = y_test_df.to_ndarray::<Float32Type>(IndexOrder::C)?;
+
+    // Convert the 2D arrays into slices &[f32]
+    let x_train = x_train
+        .as_slice()
+        .expect("Failed to convert x_train to slice - array may not be contiguous");
+    let y_train = y_train
+        .as_slice()
+        .expect("Failed to convert y_train to slice - array may not be contiguous");
+    let x_test = x_test
+        .as_slice()
+        .expect("Failed to convert x_test to slice - array may not be contiguous");
+    let y_test = y_test
+        .as_slice()
+        .expect("Failed to convert y_test to slice - array may not be contiguous");
+
+    // START HERE!
+    Ok("".to_string())
 }
