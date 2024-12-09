@@ -19,7 +19,9 @@ fn main() -> Result<()> {
     // Split into features and target
     let (x_train_df, y_train_df) = split_features_target(&train_df)?;
     let (x_test_df, y_test_df) = split_features_target(&test_df)?;
-    let path_to_model = train_model(&x_train_df, &y_train_df, &x_test_df, &y_test_df)?;
+
+    // Train the model
+    let _path_to_model = train_model(&x_train_df, &y_train_df, &x_test_df, &y_test_df)?;
 
     // Push to S3 bucket
 

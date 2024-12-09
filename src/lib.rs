@@ -63,7 +63,7 @@ pub fn split_train_test(df: &DataFrame, test_size_percent: f64) -> Result<(DataF
 // Split into features and target
 pub fn split_features_target(df: &DataFrame) -> Result<(DataFrame, DataFrame)> {
     let features = df.select([
-        "crim", "zn", "indus", "chas", "nox", "rm", "age", "dis", "rad", "tax", "ptratio", "black",
+        "crim", "zn", "indus", "chas", "nox", "rm", "age", "dis", "rad", "tax", "ptratio", "b",
         "lstat",
     ])?;
 
@@ -72,7 +72,6 @@ pub fn split_features_target(df: &DataFrame) -> Result<(DataFrame, DataFrame)> {
     Ok((features, target))
 }
 
-// trains the model with xgboost, evaluates on test set, saves model locally in a models directory and returns the path to the model
 pub fn train_model(
     x_train_df: &DataFrame,
     y_train_df: &DataFrame,
@@ -85,20 +84,39 @@ pub fn train_model(
     let x_test = x_test_df.to_ndarray::<Float32Type>(IndexOrder::C)?;
     let y_test = y_test_df.to_ndarray::<Float32Type>(IndexOrder::C)?;
 
-    // Convert the 2D arrays into slices &[f32]
-    let x_train = x_train
-        .as_slice()
-        .expect("Failed to convert x_train to slice - array may not be contiguous");
-    let y_train = y_train
-        .as_slice()
-        .expect("Failed to convert y_train to slice - array may not be contiguous");
-    let x_test = x_test
-        .as_slice()
-        .expect("Failed to convert x_test to slice - array may not be contiguous");
-    let y_test = y_test
-        .as_slice()
-        .expect("Failed to convert y_test to slice - array may not be contiguous");
+    // Convert training and testing sets to XGBoost DMatrix objects for evaluation
+    let mut dtrain = DMatrix::from_dense(&x_train.clone().into_raw_vec(), x_train.nrows())?;
+    let mut dtest = DMatrix::from_dense(&x_test.clone().into_raw_vec(), x_test.nrows())?;
 
-    // START HERE!
-    Ok("".to_string())
+    dtrain.set_labels(
+        y_train
+            .as_slice()
+            .ok_or_else(|| anyhow::anyhow!("Training array not contiguous"))?,
+    )?;
+
+    dtest.set_labels(
+        y_test
+            .as_slice()
+            .ok_or_else(|| anyhow::anyhow!("Testing array not contiguous"))?,
+    )?;
+
+    let evaluation_sets = &[(&dtrain, "train"), (&dtest, "test")];
+
+    // Specify overall training setup
+    let training_params = parameters::TrainingParametersBuilder::default()
+        .dtrain(&dtrain)
+        .evaluation_sets(Some(evaluation_sets))
+        .build()
+        .unwrap();
+
+    // Train model, and print evaluation data
+    let bst = Booster::train(&training_params).unwrap();
+    println!("Test {:?}", bst.predict(&dtest).unwrap());
+
+    // Save model to disk
+    let model_path = "./output/models/model.bin";
+    bst.save(model_path)?;
+    println!("Model saved to {}", model_path);
+
+    Ok(model_path.to_string())
 }
