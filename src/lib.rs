@@ -126,7 +126,7 @@ pub fn train_model(
 // pushes the given file to an S3 bucket
 pub async fn push_to_s3_bucket(path_to_model: &str) -> Result<()> {
     // Create an AWS S3 client so I can talk to the S3 service
-    let region_provider = RegionProviderChain::default_provider().or_else("us-east-1");
+    let region_provider = RegionProviderChain::default_provider().or_else("eu-west-1");
 
     let config = defaults(BehaviorVersion::latest())
         .region(region_provider)
@@ -135,12 +135,11 @@ pub async fn push_to_s3_bucket(path_to_model: &str) -> Result<()> {
 
     let client = Client::new(&config);
 
-    // Load the model file into memory
+    // Load the model file into memory and upload to S3
     let model_file_bytes = std::fs::read(path_to_model)?;
-    // Upload the model file to the S3 bucket
-    // TODO: make this value a parameter to this function
     let bucket_name = "house-price-predictor";
     let key = "boston-housing-model.bin";
+
     let _result = client
         .put_object()
         .bucket(bucket_name)
@@ -148,5 +147,6 @@ pub async fn push_to_s3_bucket(path_to_model: &str) -> Result<()> {
         .body(model_file_bytes.into())
         .send()
         .await?;
+
     Ok(())
 }

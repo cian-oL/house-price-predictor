@@ -1,4 +1,5 @@
 use anyhow::Result;
+use tokio::runtime::Runtime;
 
 use house_price_predictor::*;
 
@@ -24,7 +25,9 @@ fn main() -> Result<()> {
     let path_to_model = train_model(&x_train_df, &y_train_df, &x_test_df, &y_test_df)?;
 
     // Push to S3 bucket
-    push_to_s3_bucket(&path_to_model)?;
+    let runtime = Runtime::new()?;
+    runtime.block_on(push_to_s3_bucket(&path_to_model))?;
+    println!("Model pushed to S3 bucket");
 
     Ok(())
 }
