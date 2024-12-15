@@ -1,35 +1,47 @@
-use actix_web::{get, post, App, HttpResponse, HttpServer, Responder};
+use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 use serde::Deserialize;
 use std::io::Result;
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 struct PredictRequest {
-    #[serde(rename = "CRIM")]
+    #[serde(rename = "crim")]
     crime_rate: f64,
-    #[serde(rename = "ZN")]
-    prop_residential_land: f64,
-    #[serde(rename = "INDUS")]
-    prop_non_retail_business_acres: f64,
-    #[serde(rename = "CHAS")]
+
+    #[serde(rename = "zn")]
+    large_zones_percent: f64,
+
+    #[serde(rename = "indus")]
+    non_retail_business_acres: f64,
+
+    #[serde(rename = "chas")]
     charles_river_dummy: i8,
-    #[serde(rename = "NOX")]
+
+    #[serde(rename = "nox")]
     nitric_oxide_concentration: f64,
-    #[serde(rename = "RM")]
+
+    #[serde(rename = "rm")]
     avg_rooms_per_dwelling: f64,
-    #[serde(rename = "AGE")]
-    prop_owner_occupied_homes_built_before_1940: f64,
-    #[serde(rename = "DIS")]
-    weighted_distances_to_five_boston_employment_centers: f64,
-    #[serde(rename = "RAD")]
-    index_of_accessibility_to_radial_highways: f64,
-    #[serde(rename = "TAX")]
-    full_value_property_tax_rate_per_10k_dollars: f64,
-    #[serde(rename = "PTRATIO")]
+
+    #[serde(rename = "age")]
+    homes_pre_1940_percent: f64,
+
+    #[serde(rename = "dis")]
+    employment_centers_weighted_distance: f64,
+
+    #[serde(rename = "rad")]
+    highway_accessibility_index: f64,
+
+    #[serde(rename = "tax")]
+    property_tax_rate: f64,
+
+    #[serde(rename = "ptratio")]
     pupil_teacher_ratio: f64,
-    #[serde(rename = "B")]
-    prop_black_population: f64,
-    #[serde(rename = "LSTAT")]
-    lower_status_of_population: f64,
+
+    #[serde(rename = "b")]
+    black_population: f64,
+
+    #[serde(rename = "lstat")]
+    lower_status_percent: f64,
 }
 
 #[get("/health")]
@@ -38,7 +50,9 @@ async fn health() -> impl Responder {
 }
 
 #[post("/predict")]
-async fn predict() -> impl Responder {
+async fn predict(payload: web::Json<PredictRequest>) -> impl Responder {
+    println!("Received prediction request: {:#?}", payload);
+
     HttpResponse::Ok().body("Prediction OK")
 }
 
