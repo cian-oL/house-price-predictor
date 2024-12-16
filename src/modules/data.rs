@@ -4,20 +4,22 @@ use rand::prelude::*;
 use std::fs::File;
 use std::io::Write;
 
-pub fn download_dataset(dataset_url: &str, output_file: &str) -> Result<()> {
-    println!("Downloading Boston Housing dataset...");
+pub fn download_dataset(dataset_url: &str, dataset_file: &str) -> Result<()> {
+    println!("Downloading dataset...");
 
     let response = reqwest::blocking::get(dataset_url)?;
     let data = response.text()?;
 
-    let mut file = File::create(output_file)?;
+    let file_path = format!("./input/datasets/{}", dataset_file);
+    let mut file = File::create(&file_path)?;
     file.write_all(data.as_bytes())?;
 
-    println!("Dataset downloaded successfully to {}", output_file);
+    println!("Dataset downloaded successfully to {}", dataset_file);
     Ok(())
 }
 
-pub fn load_csv_file(file_path: &str) -> Result<DataFrame> {
+pub fn load_csv_file(dataset_file: &str) -> Result<DataFrame> {
+    let file_path = format!("./input/datasets/{}", dataset_file);
     let df = LazyCsvReader::new(file_path).finish()?.collect()?;
 
     println!("Loaded {} rows and {} columns", df.height(), df.width());

@@ -21,14 +21,17 @@ Cargo.lock
 #.idea/
 
 # Added by cargo
-
 /target
 
-# data files
-/data
+# input files
+input/datasets/*
+input/models/*
+!/input/datasets/sample.csv
+!/input/models/sample.txt
 
 # output files
-/output
+output/models/*
+!/output/models/sample.txt
 
 # macOS store
 .DS_Store

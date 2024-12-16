@@ -16,6 +16,7 @@ actix-web = "4.9.0"
 anyhow = "1.0"
 aws-config = "1.5.10"
 aws-sdk-s3 = "1.65.0"
+clap = { version = "4.5.23", features = ["derive"] }
 csv = "1.2"
 polars = { version = "0.37.0", features = ["csv", "lazy", "ndarray"] }
 rand = "0.8.5"
