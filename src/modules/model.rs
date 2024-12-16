@@ -50,3 +50,10 @@ pub fn train_model(
 
     Ok(model_path.to_string())
 }
+
+pub fn load_model_to_memory(model_file_path: &str) -> Result<Booster> {
+    let bst = Booster::load(model_file_path)?;
+
+    println!("Loaded {} successfully", model_file_path);
+    Ok(bst)
+}
