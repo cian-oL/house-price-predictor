@@ -1,5 +1,8 @@
 use anyhow::Result;
-use aws_config::{defaults, meta::region::RegionProviderChain, BehaviorVersion};
+use aws_config::{
+    defaults, meta::region::RegionProviderChain, profile::ProfileFileCredentialsProvider,
+    BehaviorVersion,
+};
 use aws_sdk_s3::Client;
 use polars::prelude::*;
 use rand::prelude::*;
@@ -125,10 +128,14 @@ pub fn train_model(
 
 // pushes the given file to an S3 bucket
 pub async fn push_to_s3_bucket(path_to_model: &str) -> Result<()> {
-    // Create an AWS S3 client so I can talk to the S3 service
     let region_provider = RegionProviderChain::default_provider().or_else("eu-west-1");
 
     let config = defaults(BehaviorVersion::latest())
+        .credentials_provider(
+            ProfileFileCredentialsProvider::builder()
+                .profile_name("default")
+                .build(),
+        )
         .region(region_provider)
         .load()
         .await;
@@ -137,7 +144,7 @@ pub async fn push_to_s3_bucket(path_to_model: &str) -> Result<()> {
 
     // Load the model file into memory and upload to S3
     let model_file_bytes = std::fs::read(path_to_model)?;
-    let bucket_name = "house-price-predictor";
+    let bucket_name = "house-price-predictor-rust";
     let key = "boston-housing-model.bin";
 
     let _result = client
