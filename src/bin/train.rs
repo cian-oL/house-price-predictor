@@ -1,7 +1,11 @@
 use anyhow::Result;
 use tokio::runtime::Runtime;
 
-use house_price_predictor::*;
+use house_price_predictor::modules::aws::push_model_to_s3_bucket;
+use house_price_predictor::modules::data::{
+    download_dataset, load_csv_file, split_features_target, split_train_test,
+};
+use house_price_predictor::modules::model::train_model;
 
 const DATASET_URL: &str =
     "https://raw.githubusercontent.com/selva86/datasets/master/BostonHousing.csv";
@@ -33,9 +37,3 @@ fn main() -> Result<()> {
 
     Ok(())
 }
-
-// let bucket_name = "house-price-predictor-rust";
-// let key = "boston-housing-model.bin";
-// let downloaded_file_path = "./output/data/downloaded-model.bin";
-// let bucket_name = "house-price-predictor-rust";
-// let key = "boston-housing-model.bin";

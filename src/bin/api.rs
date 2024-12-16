@@ -2,7 +2,7 @@ use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 use serde::Deserialize;
 use std::io::Result;
 
-use house_price_predictor::*;
+use house_price_predictor::modules::aws::download_model_from_s3_bucket;
 
 #[derive(Debug, Deserialize)]
 struct PredictRequest {
