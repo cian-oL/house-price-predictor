@@ -2,6 +2,8 @@ use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 use serde::Deserialize;
 use std::io::Result;
 
+use house_price_predictor::*;
+
 #[derive(Debug, Deserialize)]
 struct PredictRequest {
     #[serde(rename = "crim")]
@@ -59,6 +61,14 @@ async fn predict(payload: web::Json<PredictRequest>) -> impl Responder {
 #[actix_web::main]
 async fn main() -> Result<()> {
     println!("Starting API server...");
+
+    download_model_from_s3_bucket(
+        "house-price-predictor-rust",
+        "boston-housing-model.bin",
+        "./output/data/downloaded-model.bin",
+    )
+    .await
+    .unwrap();
 
     HttpServer::new(|| App::new().service(health).service(predict))
         .bind(("127.0.0.1", 8080))?

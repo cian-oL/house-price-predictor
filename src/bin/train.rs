@@ -10,6 +10,8 @@ const OUTPUT_FILE: &str = "./data/boston_housing.csv";
 fn main() -> Result<()> {
     // Download the dataset to disk
     download_dataset(DATASET_URL, OUTPUT_FILE)?;
+    let bucket_name = "house-price-predictor-rust";
+    let key = "boston-housing-model.bin";
 
     // Load file into memory
     let df = load_csv_file(OUTPUT_FILE)?;
@@ -26,8 +28,14 @@ fn main() -> Result<()> {
 
     // Push to S3 bucket
     let runtime = Runtime::new()?;
-    runtime.block_on(push_to_s3_bucket(&path_to_model))?;
+    runtime.block_on(push_model_to_s3_bucket(&path_to_model, bucket_name, key))?;
     println!("Model pushed to S3 bucket");
 
     Ok(())
 }
+
+// let bucket_name = "house-price-predictor-rust";
+// let key = "boston-housing-model.bin";
+// let downloaded_file_path = "./output/data/downloaded-model.bin";
+// let bucket_name = "house-price-predictor-rust";
+// let key = "boston-housing-model.bin";
