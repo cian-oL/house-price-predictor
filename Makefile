@@ -7,7 +7,9 @@ run-train-dev:
 		--key boston-housing-model.bin
 
 run-api-dev:
-	cargo run --bin api
+	cargo run --bin api -- \
+		--bucket-name house-price-predictor-rust \
+		--key boston-housing-model.bin
 
 # Test the API to return a successful post request with one line of data
 request-predict-dev:

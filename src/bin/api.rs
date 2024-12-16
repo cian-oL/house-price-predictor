@@ -1,8 +1,21 @@
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
+use clap::Parser;
 use serde::Deserialize;
 use std::io::Result;
 
 use house_price_predictor::modules::aws::download_model_from_s3_bucket;
+
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+struct Args {
+    /// Bucket name
+    #[arg(short, long)]
+    bucket_name: String,
+
+    /// Key (for S3 file)
+    #[arg(short = 'k', long = "key")]
+    s3_file_key: String,
+}
 
 #[derive(Debug, Deserialize)]
 struct PredictRequest {
@@ -60,12 +73,17 @@ async fn predict(payload: web::Json<PredictRequest>) -> impl Responder {
 
 #[actix_web::main]
 async fn main() -> Result<()> {
+    let Args {
+        bucket_name,
+        s3_file_key,
+    } = Args::parse();
+
     println!("Starting API server...");
 
     download_model_from_s3_bucket(
-        "house-price-predictor-rust",
-        "boston-housing-model.bin",
-        "./output/data/downloaded-model.bin",
+        &bucket_name,
+        &s3_file_key,
+        "./input/models/downloaded-model.bin",
     )
     .await
     .unwrap();
