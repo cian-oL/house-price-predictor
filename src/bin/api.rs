@@ -2,7 +2,7 @@ use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 use clap::Parser;
 use serde::Deserialize;
 use std::{io::Result, sync::Arc};
-use xgboost::Booster;
+use xgboost::{Booster, DMatrix};
 
 use house_price_predictor::modules::{
     aws::download_model_from_s3_bucket, model::load_model_to_memory,
@@ -77,12 +77,39 @@ async fn health() -> impl Responder {
 async fn predict(payload: web::Json<PredictRequest>, data: web::Data<AppState>) -> impl Responder {
     println!("Received prediction request: {:#?}", payload);
 
-    // confirm model is available as part of the app state
-    let model_metadata = data.model.get_attribute_names().unwrap();
-    println!("Model metadata: {:?}", model_metadata);
+    // // confirm model is available as part of the app state
+    // let model_metadata = data.model.get_attribute_names().unwrap();
+    // println!("Model metadata: {:?}", model_metadata);
+
+    let dmatrix_features = transform_payload_to_dmatrix(&payload).unwrap();
 
     println!("Features sent by the client: {:?}", payload);
     HttpResponse::Ok().body("Prediction OK")
+}
+
+/// Transform a JSON payload into a DMatrix
+fn transform_payload_to_dmatrix(payload: &PredictRequest) -> anyhow::Result<DMatrix> {
+    // transform payload into f64 slice
+    let features: Vec<f32> = [
+        payload.crime_rate,
+        payload.large_zones_percent,
+        payload.non_retail_business_acres,
+        payload.charles_river_dummy as f64,
+        payload.nitric_oxide_concentration,
+        payload.avg_rooms_per_dwelling,
+        payload.homes_pre_1940_percent,
+        payload.employment_centers_weighted_distance,
+        payload.highway_accessibility_index,
+        payload.property_tax_rate,
+        payload.pupil_teacher_ratio,
+        payload.black_population,
+        payload.lower_status_percent,
+    ]
+    .iter()
+    .map(|f| *f as f32)
+    .collect();
+
+    Ok(DMatrix::from_dense(&features, 1)?)
 }
 
 #[actix_web::main]
