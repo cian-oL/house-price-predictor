@@ -74,9 +74,14 @@ async fn health() -> impl Responder {
 }
 
 #[post("/predict")]
-async fn predict(payload: web::Json<PredictRequest>) -> impl Responder {
+async fn predict(payload: web::Json<PredictRequest>, data: web::Data<AppState>) -> impl Responder {
     println!("Received prediction request: {:#?}", payload);
 
+    // confirm model is available as part of the app state
+    let model_metadata = data.model.get_attribute_names().unwrap();
+    println!("Model metadata: {:?}", model_metadata);
+
+    println!("Features sent by the client: {:?}", payload);
     HttpResponse::Ok().body("Prediction OK")
 }
 
